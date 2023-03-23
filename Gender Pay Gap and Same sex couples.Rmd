@@ -1,0 +1,428 @@
+---
+title: "Gender pay disparity and its impact on residential choice location of same sex couples: Case study of Des Moines, Iowa"
+author: "Siddhesh R. Kudale"
+output: 
+  pdf_document: 
+    citation_package: natbib
+    keep_tex: false
+    latex_engine: pdflatex
+fontfamily: mathpazo
+fontsize: 12pt
+geometry: margin=1in
+header-includes:
+   - \linespread{1.5}
+   
+bibliography: citations.bib
+link-citations: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(gridExtra)
+library(googleway)
+library(tidycensus)
+library(prettymapr)
+library(tidyverse)
+library(ggspatial)
+library(reshape2)
+library(devtools)
+library(cowplot)
+library(ggplot2)
+library(writexl)
+library(readxl)
+library(tigris)
+library(knitr)
+library(dplyr)
+library(grid)
+library(ggsn)
+library(XML)
+library(ggx)
+library(sf)
+```
+
+# Background
+
+Iowa, in 2009, became the first state to legalise Same Sex Unions in the Midwest, third in the United States right after Massachusetts and Connecticut. Iowa was also the fourth state out of fifty in the United States to legalize same-sex marriages. Before early European settlers came to America, there were a significant number of Native Americans who resided in the area; including the Dakota and Omaha tribes. Interestingly, these people had a very varied understanding of gender and sexuality as opposed to the European settlers. Both these indigenous groups recognized and identified individuals who were genotypically assigned male at birth but phenotypically acted and behaved as female later on in life. While the Dakota called such individuals as the winkta, the Omaha recognised them as mix'uga.
+
+Despite this understanding of the LGBTQIA+ community being a muddled one, it is undeniably true that there was no outright denial of the existence of such groups, nor criminalization of them as under the British rule in all of its colonies. The criminalization of these communities led to an eventual and long lasting social imbibition and a wave of discrimination against other genders and alternative sexualities, that to this date there is significant amount of upheaval by various anti-gay groups disregarding alternative sexualities and genders.
+
+There have been significant changes undertaken by various public and private bodies, organisations and firms to include LGBTQIA+ persons into their systems and help provide them with a welcoming and judgment-free space where they live/work/study, or in general terms. A simple example that can be quoted is an extract from the Iowa City Community School District LGBTQIA+ initiative: *"The District shall increase community engagement and community awareness of District (LGBTQIA+ inclusion) initiatives, specifically for the parents of children: effectively across multiple platforms and establishing program, policies, and practices to create and foster a relationship with parents and the community."* (@Policyreport).
+
+State level policies for anti-bullying are active in forty-eight of the fifty states, with Georgia being the first one to adapt such a legislation as early as 1999 (@nyu). But do these legislations do any good? Does enacting such legislations have a good impact on the larger community? Sure the victims get a place to express themselves and get legal help: but does legislation have the power to stop the crime itself? Does legislation have the power to bring about social change? Even today: despite such legislations being active, there are a significant number of crimes against the LGBTQIA+ community in various places, metropolitan cities included (despite the image of cities and city folks being that of a progressive one). That is also mixed along with other repressions that the community has had to go through until the law finally backed them; legalising same-sex marriages across all the states in 2015.
+
+Mental health professionals began to play a significant role when "homosexuality" changed from being a sin to a sickness (Morin and Rothblum 1991), but still do play a major role today, decades after the American Psychological Association in 1975, adopted an official policy statement stating "homosexuality per se implies no impairment in judgment, stability, reliability, or general social or vocational capabilities," removing homosexuality from the official list of mental sicknesses (@conger).
+
+Eventually, we come to the question of how can we as planners do better justice and/or service to this section of the society?
+
+```{r, echo=FALSE}
+year <- c(2013, 2014, 2015, 2016, 2017, 2018)
+crimes <- c(1243, 1097, 1148, 1180, 1217, 1347)
+table1 <- data.frame(year, crimes)
+library(ggplot2)
+ggplot(data = table1, aes(x= year, y=crimes))+ geom_line(color = "Brown")+ geom_point(color="Brown")+ geom_text(label= crimes, nudge_x = 0.25,nudge_y = 0.25,check_overlap = TRUE)+ labs(title = "Figure 1: Total LGBTQIA+ hate crime incidents", subtitle = "Source: Federal Bureau of Investigation", x="Year", y="Total incidents") + theme_linedraw()
+```
+
+```{r, echo=FALSE}
+year2 <- c(2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020)
+crimes2 <- c(30,0,17,12,10,13,33,20)
+table2 <- data.frame(year2, crimes2)
+library(ggplot2)
+ggplot(data = table2, aes(x= year2, y=crimes2))+ geom_line(color = "Brown")+ geom_point(color="Brown")+ geom_text(label= crimes2, nudge_x = 0.25,nudge_y = 0.25,check_overlap = TRUE)+ labs(title = "Figure 2: Total LGBTQIA+ hate crime incidents in the state of Iowa", subtitle = "Source: Federal Investigation Bureau (All figures are in percentage share)", x="Year", y="Total incidents") + theme_linedraw()
+```
+
+[@fbi]
+
+Both the figures given above show us the crime rates against LGBTQIA+ people in both the national context and in the state of Iowa (FBI 2013-2020). As far as crimes alone are considered, one in five hate crimes in the US were either alternative gender/sexuality related crimes, which is a considerably high number of crimes, which also remains constant even at the state level in the case of Iowa. It is also to be noted that not all crimes are necessarily reported, due to various reasons. Though the urban contexts do not show records of active violence according to this data set, a sense of prejudice does run even in the urban contexts, one which cannot be actively quantified; but also does make a huge difference in the urban dynamics of how cities tend to function.
+
+@doan, in her seminal work in queer planning talks about overcoming the dichotomy of gender not being a simple process with transpeople being denied jobs, hence also denied having a right to stay alive independently, making them resort to the black webs of the underground economy of drugs and prostitution, porn or other kinds of sex work (@grant). @grant also talks about ten types of discimination faced by the community (specifically the transpeople), which include loss of jobs due to bias, eviction due to bias, severe school bullying or harassment, teacher bullying, physical assault due to bias, sexual assault due to bias, homelessness due to gender/identity expression, loss of relationship with partner due to gender/identity expression, denial of medical service, incarceration due to gender/identity discrimination. This is something that should be overcome by the tactical use of policy.
+
+However, there have been significant works in creation of exclusively gay neighborhoods across the United states, some prime examples being the West Village in New York, or Castro in San Francisco (@bitterman). However, these have not been without their own problems: Gay men, known to be promiscuous also played a role in the creation and widespreading of the AIDS crisis in June 1981. A writer for the San Francisco Chronicle added that mobilization in gay districts helped to lower infection rates (@bitterman). However, there are two sides to each coin. Sure the creation of Gay Neighborhoods, or gayborhoods for short, did provide for the creation of an identity, a safe space for individuals identifying with alternate genders and sexualities. At the same time it can be argued that this particular sort of planning also led to a systematic exclusion of these communities. If we did talk in context of ethnic subdivisions and making of specific neighborhoods for specific ethinicities (or on racial grounds) Pruitt Igoe being a famed example, there would have been widespread opposition on discriminatory grounds. Yet, creation of Gayborhoods is a good idea? That doesn't somehow go well.
+
+If we are to design and plan cities that are just, inclusive, and non-discriminatory, there needs to be social inclusion powered by physical inclusion, which will be peacefully propagated by tactical design. This is what organic city development exactly does (not necessarily that organic city development is always better), the examples of which can be seen in New York, Chicago, Orlando, Los Angeles, and most metropolitan cities. Downtown areas in these cities have a wide range of businesses that actively cater to all members of these communities, which might range from simple psych-consult clinics to medical care, or to community specific bars or clubs. Many cities also consciously bring about inclusive planning by supporting community specific events including pride parades and such other events, sometimes even sponsoring them (for example the recent Urbana Pride in September 2021). Des Moines is also a front-runner in such works, with the Capital City Pride being one of the most famous LGBT organisations in the country. At the same time, downtown Des Moines also has a very organically developed LGBT-supportive scenario, with many supportive facilities available in the area.
+
+The history of the LGBTQIA+ community has its connection with how planners have tried to consciously include/exclude it from the mainstream development in examples like the Boys-town in Chicago, The Castro in San Francisco and such others across various cities in the United States. Seminal works like those undertaken by @doan and @bitterman have had a considerable influence on the theoretical as well as practical discussion on this topic and a resultant consistent de-ignorance and inclusion of this community in the planning domain. Despite all these efforts, is the work done on this topic good enough to carry further? Is the LGBTQIA+ community feeling really included? What certain urban contexts and urban municipalities try to establish and implement is usually a predecessor of effective further work, but is sadly only short lived and definitely slow paced. At the same time, many such efforts in cities do face a lot of opposition from the state forces as well as restrictions due to outdated policies that cannot be changed or resolved in a day.
+
+```{r, include=FALSE}
+amer <- read_excel("Data/ssex-tables-2019.xlsx")
+colnames(amer) <- c("State","Absolute","Percent")
+
+amer_boundary <- get_decennial(
+  geometry = TRUE,
+  geography = "state",
+  variables = "P001001",
+  year = 2010,
+  output = "wide"
+)
+
+amer_boundary <- amer_boundary %>% filter(NAME != c("Hawaii")) %>% filter(NAME != c("Alaska")) %>% filter(NAME != c("Puerto Rico"))
+```
+
+```{r, fig.height = 10, fig.width = 10, echo=FALSE}
+amer <- left_join(amer,amer_boundary,by = c("State" = "NAME")) 
+amer <- amer %>% select("State","Absolute","Percent","geometry") 
+amer <- filter(amer,amer$State != "Hawaii") 
+amer <- filter(amer,amer$State != "Alaska")
+
+amer$Absolute <- cut(amer$Absolute,breaks=c(0,5000,10000,15000,20000,25000,30000,Inf), labels=c('Below 5000','5000-10,000','10,000-15,000','15,000-20,000','20,000-25,000','25,000-30,000','30,000 and above'))
+
+amer %>% 
+  ggplot()+
+  geom_sf(data = amer, aes(fill = Absolute, geometry = geometry), color='grey')+
+  scale_fill_grey(start = 0.8, end = 0.2, na.value = "papayawhip", aesthetics = "fill", name='Absolute Number of Same Sex couples', guide = guide_legend(direction = "horizontal", title.position = "top",title.hjust = .5,label.hjust = .5,label.position = 'bottom', keywidth = 1, keyheight = .5))+
+  labs(title = "Fig. 3: Absolute Number of Same Sex couples in the US",subtitle = "Year 2010",caption=c('Source: US Decennial Census Data, 2010'))+theme_bw()+
+  theme(title = element_text(face = "bold"), legend.position='bottom')
+```
+
+The figure above gives us a detailed idea about how the numbers of same sex couples are distributed in the United States. Yet, this analysis gives us a misleading idea about the existence of the communities. This talks about the absolute numbers irrespective of the total; hence irrespective of the percentage representation of the community. Going by absolute number, it is but obvious that areas with larger land and urban areas: places like Texas and California shall have a larger number of LGBTQIA+ couples. *It should also be understood that all the analysis in this memorandum is specifically done for couples as settling with a partner shows longevity (required in the foresight for planning) as well as the level of safety such people perceive, to finally make a decision to settle in a particular geographical space.* The figure given below on the other hand shows the percentage composition of the LGBTQIA+ community of total population of the state. In this, it is clearly visible that the states of Washington, Oregon, Delaware and Massachusetts have a good percentage composition, with D.C. also standing out at 2.4%. The question that arises from this is that: what are these states doing right that the people from this community feel comparatively safer to settle down at these place? Obviously there are variables like interstate migration, urban-rural divide that tweak the numbers in these analyses. Yet, why is this not possible in the other states is a question to be pondered over.
+
+```{r, fig.height = 10, fig.width = 10, echo=FALSE}
+amer$Percent <- cut(amer$Percent,breaks=c(0,0.2,0.4,0.6,0.8,1,Inf), labels=c('Below 0.2%','0.2-0.4%','0.4-0.6%','0.6-0.8%','0.8-1%','1% and above'))
+
+amer %>% 
+  ggplot()+
+  geom_sf(data = amer, aes(fill = Percent, geometry = geometry), color='grey')+
+  scale_fill_grey(start = 0.8, end = 0.2, na.value = "papayawhip", aesthetics = "fill", name='Percentage of Same Sex couples', guide = guide_legend(direction = "horizontal", title.position = "top",title.hjust = .5,label.hjust = .5,label.position = 'bottom', keywidth = 1, keyheight = .5))+
+  labs(title = "Fig. 4: Same Sex couples in the US, percentage of total",subtitle = "Year 2010",caption=c('Source: US Decennial Census Data, 2010'))+theme_bw()+
+  theme(title = element_text(face = "bold"), legend.position='bottom')
+```
+
+# Analysis of incomes
+
+When it comes to the analysis of incomes of this community at the national level, it can be seen that there is a disproportionate difference in the earnings of different types of households. This might stem from the employment levels of different households as well, with over fifty percent married opposite sex couples having only one partner employed; while an average of 66 percent of all same sex couples have both partners employed.
+
+### Table 1: Annual Median Household Incomes according to Choice of living in the United States.
+
+```{r, echo=FALSE}
+ty <- c('Female Same Sex','Male Same Sex','Married Opp. Sex','Total Same Sex','Unmarried Opp. Sex')
+inco <- c(87289,114182,96932,98613,72401)
+medhhinc <- data.frame(ty,inco)
+colnames(medhhinc) <- c("Choice of Living","Annual Median Household Income")
+kable(medhhinc)
+```
+
+
+```{r, fig.height = 6.5, fig.width = 10, echo=FALSE}
+inc <- read_excel("Data/Book1.xlsx")
+
+ggplot(inc, aes(fill= HH_inc, y=perc, x=type))+ 
+    geom_bar(data=inc, position="fill", stat = 'identity', color = 'grey28')+ scale_fill_grey("Household Income")+ labs(title='Fig. 5: Household income by choice of living in the United States', subtitle = "Year 2019", caption=c('Source: American Community Survey Data, 2019'), x='Choice of living: Married/Unmarried, Same/Opposite sex', y='Percent of total')+
+  theme_minimal()+ theme_bw()
+```
+
+If we also refer the table stated above, we can see the difference ourselves. Male Same sex couples have a higher median annual income by a margin of at least 18,000 USD in comparison to Married opposite sex couples, while the Female same sex couples have one of the lowest median annual incomes. This might also stem from the fact that women are paid lesser with respect to their male counterparts in many workplaces as a result of sexism, which cannot be not considered when we look at this analysis. This is further evidenced by the graph given below, which shows the detailed distribution of the incomes of various types of households. In the male same sex distribution, it can be clearly noticed that over fifty percent of all male homosexual couples earn in the bracket of higher than \$100,000 or more, which is clearly inconsistent with the other data.
+
+# Introduction to the case study: the city of Des Moines
+
+The city of Des Moines had a population of 135,466 persons according to the 2010 census, in these selected census tracts, of which a considerably consistent distribution is seen spatially in the map given below.
+
+```{r, include = FALSE}
+census_api_key("70af621704145e53ccff3df83d215554153c6028")
+
+dm3 <- get_decennial(
+  geography = "tract",
+  state = "Iowa",
+  county = "Polk",
+  year = 2010,
+  variable = "P001001",
+  output = "wide",
+  geometry = TRUE
+)
+
+dm3 <- dm3 %>% 
+  filter(GEOID == "19153011600" | GEOID < "19153005301") %>% 
+  mutate('state' = 'Iowa', 'label' = "")
+ 
+dm3["54","label"] <- "Downtown Des Moines"
+```
+
+```{r, include=FALSE}
+dm3$P001001 <- cut(dm3$P001001,breaks=c(0,1000,1500,2000,2500,3000,3500,4000,Inf), labels=c('Below 1000','1000-1500','1500-2000','2000-2500','2500-3000','3000-3500','3500-4000','4000 and above'))
+```
+
+```{r, fig.height = 6, fig.width = 10, echo=FALSE}
+dm_outline <- dm3 %>% 
+  group_by(state) %>% 
+  summarise(count=n())
+
+dm3 %>% 
+  ggplot()+
+  geom_sf(data = dm3, aes(fill = P001001), color='grey')+
+  geom_sf(data = dm_outline, fill = "transparent", size = 1, color = "dark red", linetype = "dotdash")+ 
+  scale_fill_grey(start = 0.8, end = 0.2, na.value = "papayawhip", aesthetics = "fill", name='Population', guide = guide_legend(direction = "horizontal", title.position = "top",title.hjust = .5,label.hjust = .5,label.position = 'bottom', keywidth = 1, keyheight = .5))+
+  labs(title = "Fig. 6: Total Tractwise Population in Des Moines City, Iowa",
+       caption=c('Source: US Decennial Census Data, 2010'))+
+  theme_bw()+ theme_minimal()+theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        panel.background = element_rect(fill = "grey99"),
+        panel.grid.major = element_line(color = "grey99"))+
+  theme(title = element_text(face = "bold"), legend.position='bottom')+
+  annotation_scale(location = "tr", width_hint = 0.4, pad_x = unit(0.3, "in"), pad_y = unit(0.3, "in"))+
+  annotation_north_arrow(location = "bl", which_north = "true", 
+        pad_x = unit(0.5, "in"), pad_y = unit(0.5, "in"),
+        style = north_arrow_fancy_orienteering)+
+  theme(panel.grid.major = element_line(color = gray(0.5), linetype = "dashed", size = 0.5), panel.background = element_rect(fill = "transparent"))
+```
+
+Higher concentrations are observed in both suburban peripheral areas and the downtown district. At the same time, it can be observed that the city has a considerable young population in the age bracket of 20-29 years, for which a subsequent number of average to well paying jobs can or should be integrated within the city. Though the age-wise data on sexuality at the city or tract level could not be found, it can be safely assumed that the city will also have about 1% of its population that is LGBTQIA+.
+
+```{r, include=FALSE}
+dm4 <- read_excel("Data/Desktop\file name.xlsx")
+
+dm4 <- dm4%>%
+  pivot_longer(names_to = 'Gender', values_to = 'Population', cols = 2:3) %>%
+  mutate(PopPerc=case_when(Gender=='Male'~round(Population/sum(Population)*100,2), TRUE~-round(Population/sum(Population)*100,2)), signal=case_when(Gender=='Male'~1, TRUE~-1))
+head(dm4)
+levels(dm4$Age)
+dm4$Age <- factor(dm4$Age,levels=unique(dm4$Age),ordered=TRUE)
+```
+
+```{r, fig.height = 6, fig.width = 10, echo=FALSE}
+ggplot(dm4)+
+  geom_bar(aes(x=Age,y=PopPerc,fill=Gender),stat='identity')+
+  geom_text(aes(x=Age,y=PopPerc+signal*.3,label=abs(PopPerc)))+
+  scale_fill_manual(name='',values=c('gray28','gray82'))+
+  scale_y_continuous(breaks=seq(-10,10,1),
+                     labels=function(x){paste(abs(x),'%')})+
+  coord_flip()+
+  labs(x='',y='Population (%)',
+       title='Fig. 7: Age Population Pyramid for Des Moines, Iowa',
+       subtitle=paste('Total resident population in 2010:', format(sum(dm4$Population),big.mark=',')),
+       caption=c('Source: US Decennial Census Data, 2010'))+
+  cowplot::theme_cowplot()+
+  theme(axis.text.x=element_text(vjust=.5),
+        panel.grid.major.y = element_line(color='lightgray',linetype='dashed'),
+        legend.position = 'bottom',
+        legend.justification = 'center')
+```
+
+Furthermore, analysis at the city level does leave out a lot of data on the suburban residential areas, for which further analysis was conducted on the Polk county data for the city of Des Moines. 
+
+# Analysing the Residential location choices
+
+While looking at these maps, it is visible that the locational choice of people is mostly out in the peripheral areas, especially as same sex couples, as suburban areas provide a level of privacy and individuality at a cheaper rate. 
+
+```{r, include=FALSE}
+ssdm <- get_acs(
+  geography = "tract",
+  geometry = TRUE,
+  table = "B11009",
+  year = 2018,
+  state = "Iowa",
+  county = c("Polk County"),
+  output = "wide"
+)
+
+ssdm <- ssdm %>% 
+  select('GEOID', 'NAME', 'geometry', 'B11009_003E', 'B11009_005E')
+colnames(ssdm) <- c('GEOID', 'NAME', 'MM', 'FF', 'geometry')
+
+dm_outline <- summarise(ssdm)
+
+dm3 <- get_decennial(
+  geography = "tract",
+  state = "Iowa",
+  county = "Polk",
+  year = 2010,
+  variable = "P001001",
+  output = "wide",
+  geometry = TRUE
+)
+
+dm3 <- dm3 %>% 
+  filter(GEOID == "19153011600" | GEOID < "19153005301") %>% 
+  mutate('state' = 'Iowa', 'label' = "")
+
+dm3 <- summarise(dm3)
+```
+
+```{r, include=FALSE}
+ssdmre <- get_acs(
+  geography = "tract",
+  geometry = TRUE,
+  table = "B25105",
+  year = 2018,
+  state = "Iowa",
+  county = c("Polk County"),
+  output = "wide"
+)
+```
+
+```{r, include=FALSE}
+ssdmmedinc <- get_acs(
+  geography = "tract",
+  geometry = TRUE,
+  table = "B06011",
+  year = 2018,
+  state = "Iowa",
+  county = c("Polk County"),
+  output = "wide"
+)
+```
+
+```{r, include=FALSE}
+ssdmalemedinc <- get_acs(
+  geography = "tract",
+  geometry = TRUE,
+  table = "B24125",
+  year = 2018,
+  state = "Iowa",
+  county = c("Polk County"),
+  output = "wide"
+)
+
+ssdfemalemedinc <- get_acs(
+  geography = "tract",
+  geometry = TRUE,
+  table = "S2002",
+  year = 2018,
+  state = "Iowa",
+  county = c("Polk County"),
+  output = "wide"
+)
+```
+
+```{r, echo=FALSE}
+asd <- ssdm %>% 
+  ggplot()+
+  geom_sf(data = ssdm, aes(fill = MM, color = MM), color = 'grey69')+
+  scale_fill_gradient(low = "grey89", high = "paleturquoise4", aesthetics = "fill", guide = guide_legend(title = "Number of Male/Male couples", direction = "horizontal", title.position = "top",title.hjust = .5,label.hjust = .5,label.position = 'bottom', keywidth = 1, keyheight = .5))+
+  geom_sf(data = dm_outline, fill ='transparent', size = 1, color = 'skyblue4', linetype = 'dotdash')+
+  geom_sf(data = dm3, fill = "transparent", size = 1, color = "dark red", linetype = "dotdash")+
+  labs(title = "Tractwise Male Same Sex Couples")+
+  theme_bw()+ theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        panel.background = element_rect(fill = "grey99"),
+        panel.grid.major = element_line(color = "grey99"))+
+  theme(title = element_text(face = "bold"), legend.position='bottom')+
+  annotation_scale(location = "tr", width_hint = 0.4, pad_x = unit(0.3, "in"), pad_y = unit(0.3, "in"))+
+  annotation_north_arrow(location = "bl", which_north = "true", 
+        pad_x = unit(0.05, "in"), pad_y = unit(0.05, "in"), 
+        style = north_arrow_fancy_orienteering) 
+```
+
+```{r, echo=FALSE}
+asdf <- ssdm %>% 
+  ggplot()+
+  geom_sf(data = ssdm, aes(fill = FF, geometry = geometry, color = FF), color = 'grey69')+
+  scale_fill_gradient(low = "grey89", high = "palevioletred4", na.value = "transparent", aesthetics = "fill", guide = guide_legend(title = "Number of Female/Female couples", direction = "horizontal", title.position = "top",title.hjust = .5,label.hjust = .5,label.position = 'bottom', keywidth = 1, keyheight = .5))+
+  geom_sf(data = dm_outline, fill = "transparent", size = 1, color = "maroon", linetype = "dotdash")+ 
+    geom_sf(data = dm3, fill = "transparent", size = 1, color = "dark red", linetype = "dotdash")+
+  labs(title = "Tractwise Female Same Sex Couples")+
+  theme_bw()+  theme_bw()+ theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        panel.background = element_rect(fill = "grey99"),
+        panel.grid.major = element_line(color = "grey99"))+
+  theme(title = element_text(face = "bold"), legend.position='bottom')+
+  annotation_scale(location = "tr", width_hint = 0.4, pad_x = unit(0.3, "in"), pad_y = unit(0.3, "in"))+
+  annotation_north_arrow(location = "bl", which_north = "true", 
+        pad_x = unit(0.05, "in"), pad_y = unit(0.05, "in"),
+        style = north_arrow_fancy_orienteering)
+
+grid.arrange(asd, asdf, ncol=2)
+```
+
+```{r, echo=FALSE}
+qwe <- ssdmre %>% 
+  ggplot()+
+  geom_sf(data = ssdmre, aes(fill = B25105_001E, geometry = geometry, color = B25105_001E), color = 'grey69')+
+  scale_fill_gradient(low = "grey89", high = "tan4", na.value = "transparent", aesthetics = "fill", guide = guide_legend(title = "Median Monthly Housing costs (in USD)", direction = "horizontal", title.position = "top",title.hjust = .5,label.hjust = .5,label.position = 'bottom', keywidth = 1, keyheight = .5))+
+  geom_sf(data = dm_outline, fill = "transparent", size = 1, color = "tomato4", linetype = "dotdash")+ 
+  geom_sf(data = dm3, fill = "transparent", size = 1, color = "dark red", linetype = "dotdash")+
+  labs(title = "Median Monthly Housing costs",caption = c("  "))+
+  theme_bw()+ theme_minimal()+theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        panel.background = element_rect(fill = "grey99"),
+        panel.grid.major = element_line(color = "grey99"))+
+  theme(title = element_text(face = "bold"), legend.position='bottom')+
+  annotation_scale(location = "tr", width_hint = 0.4, pad_x = unit(0.3, "in"), pad_y = unit(0.3, "in"))+
+  annotation_north_arrow(location = "bl", which_north = "true", 
+        pad_x = unit(0.05, "in"), pad_y = unit(0.05, "in"),
+        style = north_arrow_fancy_orienteering)
+```
+
+```{r, echo=FALSE}
+qwer <- ssdmmedinc %>% 
+  ggplot()+
+  geom_sf(data = ssdmmedinc, aes(fill = B06011_001E, geometry = geometry, color = B06011_001E), color = 'grey69')+
+  scale_fill_gradient(low = "grey89", high = "darkseagreen4", na.value = "transparent", aesthetics = "fill", guide = guide_legend(title = "Median Income (in USD)", direction = "horizontal", title.position = "top",title.hjust = .5,label.hjust = .5,label.position = 'bottom', keywidth = 1, keyheight = .5))+
+  geom_sf(data = dm_outline, fill = "transparent", size = 1, color = "darkgreen", linetype = "dotdash")+ 
+    geom_sf(data = dm3, fill = "transparent", size = 1, color = "dark red", linetype = "dotdash")+
+  labs(title = "Median Income",
+       caption=c('Source: ACS Data, 2019'))+
+  theme_bw()+ theme_minimal()+theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        panel.background = element_rect(fill = "grey99"),
+        panel.grid.major = element_line(color = "grey99"))+
+  theme(title = element_text(face = "bold"), legend.position='bottom')+
+  annotation_scale(location = "tr", width_hint = 0.4, pad_x = unit(0.3, "in"), pad_y = unit(0.3, "in"))+
+  annotation_north_arrow(location = "bl", which_north = "true", 
+        pad_x = unit(0.05, "in"), pad_y = unit(0.05, "in"),
+        style = north_arrow_fancy_orienteering)
+
+grid.arrange(qwe, qwer, ncol=2)
+```
+
+At the same time, downtown areas are taken for granted that they will provide all the other necessities for the people to socialise in said groups. What is interesting about these maps is that the locational choices of these groups in the city are not pinpointed. There can be seen considerable agglomerations, which still cannot be labelled as gay-areas due to the sparse nature of these choices. If we refer figure 6, which shows the residential choices of tractwise male same sex couples; the locational choice is clearly seen towards the south-eastern area of the city in Bloomfield Allen, right outside the city limits, with just about 60 couples residing in the area, followed by the town of Ankeny to the north of the city. The interpretations of these could range either ways: are these communities finding it hard to stay within the city? Is there a focussed social dynamic? Comparing with the income demographic, it does not seem that cost is a parameter for residential location choice of *especially* male same sex couples.
+
+The figures above clearly tell us the difference between the residential locations between male and female same sex couples. How does that correlate with the housing prices and median incomes of the given tracts? It is clearly visible, that in this case, Ankeny and Bloomfield/Allen have a high concentration of male same sex couples, which is supplemented by the high housing prices and high median incomes in these tracts.
+
+# Comparisons with other cities
+
+What does that spell for us as planners? Existing policies on wages only entails a minimum wage, but nothing on a wage gap in all states, Iowa included. No capping of the maximum wage also entitles the employers to just pay men more, while women could be paid minimum wage. The permutations and combinations of playing with the policy are endless. Worse if both of the genders are competing in a highly corporate environment where a lot is at stake including jobs as well as other dependent parameters including loan payments as well as insurances; not to mention entire families and livelihoods, looking at which many people choose to not say anything. A select few stand up against injustice and either get acknowledged, or have to either suffer or sue, none of which are easy choices to make.
+
+![Atlanta, Boston and Chicago](Screenshot 2021-12-11 at 12.21.00 AM.png)
+![](Screenshot 2021-12-11 at 12.38.45 AM.png)
+Sadly though, there are also limitations as to what we as planners can do at a city or metropolitan level to help with the issue.
+
+![](Screenshot 2021-12-11 at 12.42.31 AM.png)
+
+Many cities do have higher wages than state average minimum wage pays, but the implementation of which is not in the hands of the planners. To tackle with this situation, action can only be taken at three main levels: the federal or the state level or the county level; all three of which have considerable rights to make such amendments in their own territories and at the same time ensure that they are enforced and followed flawlessly. Yet, if it was this easy to be achieved, it would have been set in motion already. Nonetheless, the least that can be done is small steps at local levels: creating awareness among focus groups, both LGBTQ and feminist groups and then starting off small with small towns taking the lead within their own boundaries, making equal pays the norm.
+
+In conclusion, with all the analysis carried out on this topic, it is concrete that there should be some effective policy that should be implemented that regulates payscales across the gender gap.
+
+# References
